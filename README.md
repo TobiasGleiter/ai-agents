@@ -1,6 +1,6 @@
 # 🤖 AI-Agents with Go
 
-Experiments with Go for independent AI-Agents
+Experiments with Go for AI-Agents
 
 ## 📋 Todos:
 
