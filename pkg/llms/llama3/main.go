@@ -1,4 +1,4 @@
-package ollama
+package llama3
 
 import (
 	"bytes"
