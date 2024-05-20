@@ -8,6 +8,11 @@ import (
 	"github.com/TobiasGleiter/ai-agents/pkg/llms/ollama"
 ) 
 
+type CompanyAndTicker struct {
+    Company string `json:"company"`
+    Ticker  string `json:"ticker"`
+}
+
 func main() {
 	stockTickerNameOfCompany := "Microsoft Corporation"
 
@@ -63,11 +68,15 @@ func main() {
 	}
 
 	// Returns the final response after the stream is done.
-	finalResponse, err := ollama.Chat(llamaRequest)
-	if err != nil {
-		fmt.Printf("Error: %v\n", err)
-		return
-	}
+	res, _ := ollama.Chat(llamaRequest)
 
-	fmt.Println(finalResponse.Response)
+	fmt.Println(res.Message.Content)
+
+	var response CompanyAndTicker
+	err = json.Unmarshal([]byte(res.Message.Content), &response)
+    if err != nil {
+        log.Fatalf("Error decoding JSON response: %v", err)
+    }
+
+    fmt.Printf("Company: %s, Ticker: %s\n", response.Company, response.Ticker)
 }

@@ -1,11 +1,11 @@
 package ollama
 
 import (
-	"fmt"
 	"bytes"
 	"encoding/json"
 	"net/http"
 	"time"
+	"io"
 	"github.com/pkg/errors"
 )
 
@@ -54,6 +54,12 @@ type ChatResponse struct {
 	CreatedAt			string		`json:"created_at"`
 	Message 			ModelMessage
 	Done				bool		`json:"done"`
+	TotalDuration      int64         `json:"total_duration"`
+	LoadDuration       int64         `json:"load_duration"`
+	PromptEvalCount    int           `json:"prompt_eval_count"`
+	PromptEvalDuration int64         `json:"prompt_eval_duration"`
+	EvalCount          int           `json:"eval_count"`
+	EvalDuration       int64         `json:"eval_duration"`
 }
 
 const (
@@ -125,40 +131,46 @@ func GenerateEmbeddings(request Model) (EmbeddingResponse, error) {
 	return embeddingResponse, nil
 }
 
-func Chat(request Model) (Response, error) {
-	client := &http.Client{
-		Timeout: 240 * time.Second,
-	}
+func Chat(request Model) (ChatResponse, error) {
+    client := &http.Client{
+        Timeout: 240 * time.Second,
+    }
 
-	requestBody, err := json.Marshal(request)
-	if err != nil {
-		return Response{}, errors.Wrap(err, "error marshaling request")
-	}
+    requestBody, err := json.Marshal(request)
+    if err != nil {
+        return ChatResponse{}, errors.Wrap(err, "error marshaling request")
+    }
 
-	req, err := http.NewRequest("POST", llmChatEndpoint, bytes.NewReader(requestBody))
-	if err != nil {
-		return Response{}, errors.Wrap(err, "create request failed")
-	}
-	req.Header.Set("Content-Type", "application/json")
+    req, err := http.NewRequest("POST", llmChatEndpoint, bytes.NewReader(requestBody))
+    if err != nil {
+        return ChatResponse{}, errors.Wrap(err, "create request failed")
+    }
+    req.Header.Set("Content-Type", "application/json")
 
-	resp, err := client.Do(req)
-	if err != nil {
-		return Response{}, errors.Wrap(err, "HTTP request failed")
-	}
+    resp, err := client.Do(req)
+    if err != nil {
+        return ChatResponse{}, errors.Wrap(err, "HTTP request failed")
+    }
 	defer resp.Body.Close()
 
+    
 	decoder := json.NewDecoder(resp.Body)
-	var chatResponse Response
+	var chatResponse ChatResponse
 	for {
 		if err := decoder.Decode(&chatResponse); err != nil {
-			return Response{}, errors.Wrap(err, "error decoding response")
-			break
+			if errors.Is(err, io.EOF) {
+				break
+			}
+			return ChatResponse{}, errors.Wrap(err, "error decoding response")
 		}
-		fmt.Print(chatResponse.Message.Content )
-		if chatResponse.Done {
-			break
-		}	
 	}
 
-	return chatResponse, nil
+	if chatResponse.Done {
+		return chatResponse, nil
+	}
+
+
+    return chatResponse, nil
 }
+
+
