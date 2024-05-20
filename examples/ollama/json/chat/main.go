@@ -67,10 +67,9 @@ func main() {
 		Format: "json",
 	}
 
-	// Returns the final response after the stream is done.
-	limit := 4
 	var response CompanyAndTicker
 	
+	limit := 4
 	for i := 0; i < limit; i++ {
 		res, _ := ollama.Chat(llamaRequest)
 
