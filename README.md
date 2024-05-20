@@ -12,7 +12,7 @@ Experiments with Go for AI-Agents
 
 ### LLM Agent Architectures
 
-- [ ] Basic Reflection
+- [x] Basic Reflection
 - [ ] Reflexion Actor
 - [ ] Language Agents Tree Search (LATs)
 - [ ] Plan and Execute
