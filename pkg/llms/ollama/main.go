@@ -17,7 +17,7 @@ type ModelOptions struct {
 type ModelMessage struct {
 	Role string `json:"role,omitempty"`
 	Content string `json:"content,omitempty"`
-	// TODO: Images for e.g. llama models
+	Images []string	`json:"images,omitempty"`
 }
 
 type Model struct {
