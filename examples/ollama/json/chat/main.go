@@ -14,7 +14,7 @@ type CompanyAndTicker struct {
 }
 
 func main() {
-	stockTickerNameOfCompany := "Microsoft Corporation"
+	stockTickerNameOfCompany := "Google"
 
 	companyAndTickerSchema := map[string]map[string]string{
         "company": {
@@ -57,7 +57,7 @@ func main() {
 	})
 
 	llamaRequest := ollama.Model{
-		Model:  "llama3:8b",
+		Model:  "wizardlm2:7b",
 		Messages: messages,
 		Options: ollama.ModelOptions{
 			Temperature: 0.8,
@@ -68,15 +68,23 @@ func main() {
 	}
 
 	// Returns the final response after the stream is done.
-	res, _ := ollama.Chat(llamaRequest)
-
-	fmt.Println(res.Message.Content)
-
+	limit := 4
 	var response CompanyAndTicker
-	err = json.Unmarshal([]byte(res.Message.Content), &response)
-    if err != nil {
-        log.Fatalf("Error decoding JSON response: %v", err)
-    }
+	
+	for i := 0; i < limit; i++ {
+		res, _ := ollama.Chat(llamaRequest)
+
+		err = json.Unmarshal([]byte(res.Message.Content), &response)
+		if err == nil {
+			break
+		}
+		fmt.Println("Retrying", i)
+
+	}
+
+	if err != nil {
+		log.Fatalf("Failed to decode JSON response after %d attempts: %v", limit, err)
+	}
 
     fmt.Printf("Company: %s, Ticker: %s\n", response.Company, response.Ticker)
 }
