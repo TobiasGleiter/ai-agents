@@ -15,11 +15,11 @@ func main() {
 		Stream: false,
 	}
 
-	llamaEmbeddingResponse, err := ollama.Generate(llamaRequest)
+	llamaJsonResponse, err := ollama.Generate(llamaRequest)
 	if err != nil {
 		fmt.Printf("Error: %v\n", err)
 		return
 	}
 
-	fmt.Println("Response:", llamaEmbeddingResponse.Response)
+	fmt.Println("Response:", llamaJsonResponse.Response)
 }
