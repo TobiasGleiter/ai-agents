@@ -7,14 +7,14 @@ Experiments with Go for AI-Agents
 ## LLMs
 
 - [x] Ollama: Llama3, Llava, ...
-- [] GPT
-- [] Gemini
+- [ ] GPT
+- [ ] Gemini
 
 ### LLM Agent Architectures
 
-- [] Basic Reflection
-- [] Reflexion Actor
-- [] Language Agents Tree Search (LATs)
-- [] Plan and Execute
-- [] Reasoning without Oberservation (ReWOO)
-- [] LLM Compiler
+- [ ] Basic Reflection
+- [ ] Reflexion Actor
+- [ ] Language Agents Tree Search (LATs)
+- [ ] Plan and Execute
+- [ ] Reasoning without Oberservation (ReWOO)
+- [ ] LLM Compiler
