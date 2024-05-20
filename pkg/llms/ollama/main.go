@@ -10,7 +10,8 @@ import (
 )
 
 type ModelOptions struct {
-	NumCtx int `json:"num_ctx,omitempty"`
+	NumCtx int `json:"num_ctx"`
+	Temperature float64 `json:"temperature"`
 }
 
 type ModelMessage struct {

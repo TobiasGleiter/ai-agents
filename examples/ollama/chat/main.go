@@ -16,6 +16,9 @@ func main() {
 	llamaRequest := ollama.Model{
 		Model:  "llama3:8b",
 		Messages: messages,
+		Options: ollama.ModelOptions{
+			Temperature: 0.8,
+		},
 		Stream: true,
 	}
 
