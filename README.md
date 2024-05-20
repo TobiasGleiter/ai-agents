@@ -6,7 +6,7 @@ Experiments with Go for AI-Agents
 
 ## LLMs
 
-- [] Llama3
+- [] Ollama: Llama3
 - [] GPT
 - [] Gemini
 
