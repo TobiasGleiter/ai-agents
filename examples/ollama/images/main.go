@@ -25,11 +25,10 @@ func main() {
 		Model:  "llava:7b",
 		Messages: messages,
 		Options: ollama.ModelOptions{ NumCtx: 4096, },
-		Stream: true,
+		Stream: false, // Alternativly use true for streaming
 	}
 
 	// Returns the final response after the stream is done.
-	// Alternatively use ollama.Generate()
 	_, err := ollama.Chat(llavaRequest)
 	if err != nil {
 		fmt.Printf("Error: %v\n", err)
