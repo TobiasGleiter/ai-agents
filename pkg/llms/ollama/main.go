@@ -45,7 +45,7 @@ const (
 )
 
 
-func Generate(request interface{}) (Response, error) {
+func Generate(request Model) (Response, error) {
 	client := &http.Client{
 		Timeout: 240 * time.Second,
 	}
@@ -76,7 +76,7 @@ func Generate(request interface{}) (Response, error) {
 	return response, nil
 }
 
-func GenerateEmbeddings(request interface{}) (EmbeddingResponse, error) {
+func GenerateEmbeddings(request Model) (EmbeddingResponse, error) {
 	client := &http.Client{
 		Timeout: 240 * time.Second,
 	}
