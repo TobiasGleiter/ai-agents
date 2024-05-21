@@ -19,6 +19,8 @@ type FunctionCalling struct {
 }
 
 func main() {
+	prompt := "What's the weather like in Tenerife?"
+
 	weatherTool := `
 	{
         "name": "get_current_weather",
@@ -74,7 +76,7 @@ func main() {
 
 	messages = append(messages, ollama.ModelMessage{
 		Role: "user",
-		Content: "What's the weather like in Detroit?",
+		Content: prompt,
 	})
 
 	llamaRequest := ollama.Model{
