@@ -14,8 +14,8 @@ type Tool struct {
 }
 
 type InitialResponse struct {
-    Response string `json:"response"`
-    Critque  string `json:"critque"`
+    Answer string `json:"answer"`
+    Reflection  string `json:"reflection"`
 	Tools []Tool `json:"tools"`
 }
 
@@ -24,6 +24,9 @@ func main() {
 
 	// 1. User input
 	// 2. Initial response is generated along with self critque and suggested tool queries (needs a list of tools.)
+	// 3. Use the tool
+	// 4. Pass the initial prompt and response to the Revisor LLM
+
 
 	// 1. User input
 	userInput := "Why is reflection useful in AI?"
@@ -33,8 +36,8 @@ func main() {
 	// Use few shot prompting to increase the quality of the prompt.
 	initalResponseLlm := `
 	{
-		"response": "",
-		"critque": "",
+		"answer": "",
+		"reflection": "",
 		"tools": [
 			{
 				"name": "tool_name"
@@ -47,8 +50,8 @@ func main() {
         Role: "system",
         Content: fmt.Sprintf(`
 			You are a helpful AI assistant.
-			Generate an inital response along with self critque and select the right tools that helps solve the problem.
-			Tools available: "search_internet";"get_current_weather";
+			Generate an inital response (answer) along with self critque (reflection) how to improve and select the right tools that helps solve the problem.
+			Tools available: "search_internet";"get_current_weather";"web_scraper";
 			Respond in JSON format like this:
 				%s`, initalResponseLlm),
     })
@@ -82,5 +85,7 @@ func main() {
 	// 	log.Fatalf("Failed to format JSON: %s", err)
 	// }
 
-	ChatColor.PrintColor(ChatColor.Green, "Final Response: " + string(response.Tools[0].Name))
+	ChatColor.PrintColor(ChatColor.Yellow, "Initial Answer: " + string(response.Answer))
+	ChatColor.PrintColor(ChatColor.Cyan, "Initial Reflection: " + string(response.Reflection))
+	ChatColor.PrintColor(ChatColor.Green, "Tools: " + string(response.Tools[0].Name))
 }
