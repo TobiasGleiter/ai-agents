@@ -18,6 +18,16 @@ type FunctionCalling struct {
     Parameters  Parameters `json:"parameters"`
 }
 
+var functions = map[string]func(Parameters){
+	"get_current_weather": getCurrentWeather,
+}
+
+func getCurrentWeather(params Parameters) {
+	format, _ := params.Properties["format"].(string)
+	location, _ := params.Properties["location"].(string)
+	ChatColor.PrintColor(ChatColor.Cyan, "Getting current weather for " + location + " in " +  format)
+}
+
 func main() {
 	prompt := "What's the weather like in Tenerife?"
 
@@ -103,14 +113,4 @@ func main() {
 	} else {
 		fmt.Printf("No function found for name %s\n", response.Name)
 	}
-}
-
-var functions = map[string]func(Parameters){
-	"get_current_weather": getCurrentWeather,
-}
-
-func getCurrentWeather(params Parameters) {
-	format, _ := params.Properties["format"].(string)
-	location, _ := params.Properties["location"].(string)
-	ChatColor.PrintColor(ChatColor.Cyan, "Getting current weather for " + location + " in " +  format)
 }
