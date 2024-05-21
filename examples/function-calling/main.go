@@ -92,7 +92,7 @@ func main() {
 		Model:  "llama3:8b",
 		Messages: messages,
 		Options: ollama.ModelOptions{
-			Temperature: 0,
+			Temperature: 1,
 			NumCtx: 4096,
 		},
 		Stream: false,
@@ -121,5 +121,5 @@ var functions = map[string]func(Parameters){
 func getCurrentWeather(params Parameters) {
 	format, _ := params.Properties["format"].(string)
 	location, _ := params.Properties["location"].(string)
-	ChatColor.PrintColor(ChatColor.Cyan, "Getting current weather for" + location + " in " +  format)
+	ChatColor.PrintColor(ChatColor.Cyan, "Getting current weather for " + location + " in " +  format)
 }
