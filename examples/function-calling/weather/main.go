@@ -20,7 +20,7 @@ type FunctionCalling struct {
 
 func main() {
 	weatherTool := `
-	[{
+	{
         "name": "get_current_weather",
         "description": "Get the current weather",
         "parameters": {
@@ -40,29 +40,18 @@ func main() {
                 }
             }
         }
-    }]`
+    }`
 
 	fewShot := `
-	[
-		{
-			"name": "get_current_weather",
-			"parameters": {
-				"properties": {
-					"location": "berlin",
-					"format": "celsius"
-				}
-			}
-		},
-		{
-			"name": "get_current_weather",
-			"parameters": {
-				"properties": {
-					"location": "stuttgart",
-					"format": "celsius"
-				}
+	{
+		"name": "get_current_weather",
+		"parameters": {
+			"properties": {
+				"location": "berlin",
+				"format": "celsius"
 			}
 		}
-	]`
+	}`
 
 	var messages []ollama.ModelMessage
 	messages = append(messages, ollama.ModelMessage{
