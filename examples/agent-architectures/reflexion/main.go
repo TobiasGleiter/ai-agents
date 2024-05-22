@@ -123,20 +123,23 @@ func main() {
         Content: fmt.Sprintf(`
 			You are a revisor AI assistant.
 
-			Use the following critque to improve the response.
-			Formulate a new critque to improve the response
+			Generate a new better response along as a new critque to improve the response.
 			
 			Respond in JSON format like this:
 				%s`, initalResponseLlm),
     })
 
-	limit := 2
+	limit := 4
 	for j := 0; j < limit; j++ {
 		revisorMessages = append(revisorMessages, ollama.ModelMessage{
 			Role: "user",
 			Content: fmt.Sprintf(`
+				Generate a new better response along as a new critque to improve the response.
+
 				Response: %s
-				Critque: %s`, response.Response, response.Critque),
+				Critque: %s
+
+				Respond in JSON.`, response.Response, response.Critque),
 		})
 
 		llamaRevisorRequest := ollama.Model{
