@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"encoding/json"
 	"log"
+	"os"
 
 	"github.com/TobiasGleiter/ai-agents/pkg/llms/ollama"
 	ChatColor "github.com/TobiasGleiter/ai-agents/internal/color"
@@ -115,15 +116,15 @@ func main() {
 	}
 
 
-	// 4. Pass the initial prompt and response to the Revisor LLM
 	var revisorMessages []ollama.ModelMessage
+	// 4. Pass the initial prompt and response to the Revisor LLM
 	revisorMessages = append(revisorMessages, ollama.ModelMessage{
         Role: "system",
         Content: fmt.Sprintf(`
 			You are a revisor AI assistant.
 
-			Use the following response and the critque to improve the response.
-			If the response is really good, set Done to true.
+			Use the following critque to improve the response.
+			Formulate a new critque to improve the response
 			
 			Respond in JSON format like this:
 				%s`, initalResponseLlm),
@@ -134,7 +135,7 @@ func main() {
 		revisorMessages = append(revisorMessages, ollama.ModelMessage{
 			Role: "user",
 			Content: fmt.Sprintf(`
-				User Response: %s
+				Response: %s
 				Critque: %s`, response.Response, response.Critque),
 		})
 
@@ -142,7 +143,7 @@ func main() {
 			Model:  "llama3:8b",
 			Messages: revisorMessages,
 			Options: ollama.ModelOptions{
-				Temperature: 1,
+				Temperature: 0.8,
 				NumCtx: 4096,
 			},
 			Stream: false,
@@ -171,4 +172,38 @@ func main() {
 	}
 
 	ChatColor.PrintColor(ChatColor.Green, "Final Response: " + response.Response)
+
+	err = writeMessagesToMarkdown(revisorMessages, "messages.md")
+    if err != nil {
+        log.Fatalf("Error writing to markdown file: %s", err)
+    }
+}
+
+
+func writeMessagesToMarkdown(messages []ollama.ModelMessage, filename string) error {
+    // Create or open the markdown file
+    file, err := os.Create(filename)
+    if err != nil {
+        return fmt.Errorf("failed to create file: %w", err)
+    }
+    defer file.Close()
+
+    // Write the messages to the markdown file
+    for _, message := range messages {
+        var header string
+        if message.Role == "user" {
+            header = "### User\n"
+        } else if message.Role == "assistant" {
+            header = "### Assistant\n"
+        } else {
+            header = "### " + message.Role + "\n"
+        }
+
+        _, err := file.WriteString(header + "\n" + message.Content + "\n\n")
+        if err != nil {
+            return fmt.Errorf("failed to write to file: %w", err)
+        }
+    }
+
+    return nil
 }
