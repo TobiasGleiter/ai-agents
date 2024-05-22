@@ -14,8 +14,8 @@ type Tool struct {
 }
 
 type InitialResponse struct {
-    Answer string `json:"answer"`
-    Reflection  string `json:"reflection"`
+    Response string `json:"response"`
+    Critque  string `json:"critque"`
 	Tools []Tool `json:"tools"`
 }
 
@@ -36,8 +36,8 @@ func main() {
 	// Use few shot prompting to increase the quality of the prompt.
 	initalResponseLlm := `
 	{
-		"answer": "",
-		"reflection": "",
+		"response": "",
+		"critque": "",
 		"tools": [
 			{
 				"name": "tool_name"
@@ -45,15 +45,17 @@ func main() {
 		]
 	}`
 
+	tools := []Tool{{Name: "search_internet"}, {Name: "get_current_weather"}, {Name: "save_file"}}
+
 	var messages []ollama.ModelMessage
 	messages = append(messages, ollama.ModelMessage{
         Role: "system",
         Content: fmt.Sprintf(`
 			You are a helpful AI assistant.
-			Generate an inital response (answer) along with self critque (reflection) how to improve and select the right tools that helps solve the problem.
-			Tools available: "search_internet";"get_current_weather";"web_scraper";
+			Generate an inital response along with self critque and select the right tools that helps solve the problem.
+			Tools available: %s
 			Respond in JSON format like this:
-				%s`, initalResponseLlm),
+				%s`, tools, initalResponseLlm),
     })
 
 	messages = append(messages, ollama.ModelMessage{
@@ -85,7 +87,11 @@ func main() {
 	// 	log.Fatalf("Failed to format JSON: %s", err)
 	// }
 
-	ChatColor.PrintColor(ChatColor.Yellow, "Initial Answer: " + string(response.Answer))
-	ChatColor.PrintColor(ChatColor.Cyan, "Initial Reflection: " + string(response.Reflection))
-	ChatColor.PrintColor(ChatColor.Green, "Tools: " + string(response.Tools[0].Name))
+	ChatColor.PrintColor(ChatColor.Yellow, "Initial Response: " + string(response.Response))
+	ChatColor.PrintColor(ChatColor.Cyan, "Initial Critque: " + string(response.Critque))
+	ChatColor.PrintColor(ChatColor.Green, "Tools: " + fmt.Sprintf("%s", response.Tools))
+
+	for i := 0; i < len(response.Tools); i++ {
+		fmt.Printf(response.Tools[i].Name)
+	}
 }
