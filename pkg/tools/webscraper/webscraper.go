@@ -40,10 +40,10 @@ func (ws *WebScraper) FetchWebsiteHTML() error {
 	return nil
 } 
 
-func (ws *WebScraper) ExtractFirstHeadline() []string {
+func (ws *WebScraper) ExtractHeadlines() []string {
 	var headlines []string
-	var extractFirstHeadline func(*html.Node) bool
-	extractFirstHeadline = func(n *html.Node) bool {
+	var extractHeadlines func(*html.Node) bool
+	extractHeadlines = func(n *html.Node) bool {
 		if n.Type == html.ElementNode && n.Data == "h1" {
 			for c := n.FirstChild; c != nil; c = c.NextSibling {
 				if c.Type == html.TextNode {
@@ -54,7 +54,7 @@ func (ws *WebScraper) ExtractFirstHeadline() []string {
 		}
 
 		for c := n.FirstChild; c != nil; c = c.NextSibling {
-			if extractFirstHeadline(c) {
+			if extractHeadlines(c) {
 				return true
 			}
 		}
@@ -62,7 +62,7 @@ func (ws *WebScraper) ExtractFirstHeadline() []string {
 	}
 
 	if ws.Doc != nil {
-		if extractFirstHeadline(ws.Doc) {
+		if extractHeadlines(ws.Doc) {
 			return headlines
 		}
 	}
