@@ -6,6 +6,8 @@ import (
 	"net/http"
 	"time"
 	"io"
+	"strings"
+
 	"github.com/pkg/errors"
 )
 
@@ -28,6 +30,7 @@ type Model struct {
     Stream bool `json:"stream"`
 	Format   string   `json:"format,omitempty"`
 	KeepAlive int64 `json:"keepalive,omitempty"`
+	Stop   []string `json:"stop"` // Not from Ollama
 }
 
 type Response struct {
@@ -171,6 +174,55 @@ func Chat(request Model) (ChatResponse, error) {
 
 
     return chatResponse, nil
+}
+
+func ChatReAct(request Model) (ChatResponse, error) {
+	client := &http.Client{
+		Timeout: 240 * time.Second,
+	}
+
+	requestBody, err := json.Marshal(request)
+	if err != nil {
+		return ChatResponse{}, errors.Wrap(err, "error marshaling request")
+	}
+
+	req, err := http.NewRequest("POST", llmChatEndpoint, bytes.NewReader(requestBody))
+	if err != nil {
+		return ChatResponse{}, errors.Wrap(err, "create request failed")
+	}
+	req.Header.Set("Content-Type", "application/json")
+
+	resp, err := client.Do(req)
+	if err != nil {
+		return ChatResponse{}, errors.Wrap(err, "HTTP request failed")
+	}
+	defer resp.Body.Close()
+
+	decoder := json.NewDecoder(resp.Body)
+	var chatResponse ChatResponse
+	var finalResponse ChatResponse
+	for {
+		if err := decoder.Decode(&chatResponse); err != nil {
+			if errors.Is(err, io.EOF) {
+				break
+			}
+			return ChatResponse{}, errors.Wrap(err, "error decoding response")
+		}
+		finalResponse.Message.Content += chatResponse.Message.Content
+		for _, stopSeq := range request.Stop {
+			if strings.Contains(finalResponse.Message.Content, stopSeq) {
+				finalResponse.Message.Content = strings.Split(finalResponse.Message.Content, stopSeq)[0]
+				finalResponse.Done = true
+				return finalResponse, nil
+			}
+		}
+	}
+
+	if chatResponse.Done {
+		return finalResponse, nil
+	}
+
+	return finalResponse, nil
 }
 
 
