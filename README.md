@@ -12,8 +12,9 @@ Experiments with Go for AI-Agents
 
 ### LLM Agent Architectures
 
-- [x] Basic Reflection (examples)
-- [ ] Reflexion Actor
+- [x] Basic Reflection
+- [x] Reflexion Actor
+- [ ] ReAct (Yao, Shunyi et al. 2023)
 - [ ] Language Agents Tree Search (LATs)
 - [ ] Plan and Execute
 - [ ] Reasoning without Oberservation (ReWOO)
