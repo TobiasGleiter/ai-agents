@@ -1,7 +1,6 @@
 package webscraper
 
 import (
-	"fmt"
 	"log"
 	"net/http"
 
@@ -41,20 +40,21 @@ func (ws *WebScraper) FetchWebsiteHTML() error {
 	return nil
 } 
 
-func (ws *WebScraper) ExtractHeadlines() {
-	var extractHeadline func(*html.Node) bool
-	extractHeadline = func(n *html.Node) bool {	
+func (ws *WebScraper) ExtractFirstHeadline() []string {
+	var headlines []string
+	var extractFirstHeadline func(*html.Node) bool
+	extractFirstHeadline = func(n *html.Node) bool {
 		if n.Type == html.ElementNode && n.Data == "h1" {
 			for c := n.FirstChild; c != nil; c = c.NextSibling {
 				if c.Type == html.TextNode {
-					fmt.Println("Headline found:", c.Data)
-					return false
+					headlines = append(headlines, c.Data)
+					return true
 				}
 			}
 		}
 
 		for c := n.FirstChild; c != nil; c = c.NextSibling {
-			if extractHeadline(c) {
+			if extractFirstHeadline(c) {
 				return true
 			}
 		}
@@ -62,17 +62,23 @@ func (ws *WebScraper) ExtractHeadlines() {
 	}
 
 	if ws.Doc != nil {
-		extractHeadline(ws.Doc)
+		if extractFirstHeadline(ws.Doc) {
+			return headlines
+		}
 	}
+
+	return headlines
 }
 
-func (ws *WebScraper) ExtractSubtitles() {
+
+func (ws *WebScraper) ExtractSubtitles() []string {
+	var subtitles []string
 	var extractSubtitles func(*html.Node) bool
 	extractSubtitles = func(n *html.Node) bool {	
 		if n.Type == html.ElementNode && n.Data == "h2" {
 			for c := n.FirstChild; c != nil; c = c.NextSibling {
 				if c.Type == html.TextNode {
-					fmt.Println("Subtitles found:", c.Data)
+					subtitles = append(subtitles, c.Data)
 					return false
 				}
 			}
@@ -88,5 +94,7 @@ func (ws *WebScraper) ExtractSubtitles() {
 
 	if ws.Doc != nil {
 		extractSubtitles(ws.Doc)
+		return subtitles
 	}
+	return subtitles
 }

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 
 	ws "github.com/TobiasGleiter/ai-agents/pkg/tools/webscraper"
@@ -14,6 +15,14 @@ func main() {
 		log.Fatalf("Failed to fetch HTML: %v", err)
 	}
 
-	webscraper.ExtractHeadlines()
-	webscraper.ExtractSubtitles()
+	headlines := webscraper.ExtractFirstHeadline()
+	for i := 0; i < len(headlines); i++ {
+		fmt.Println("Headline:", headlines[i])
+	}
+
+	subtitles := webscraper.ExtractSubtitles()
+	for j := 0; j < len(subtitles); j++ {
+		fmt.Println("Subtitle:", subtitles[j])
+	}
+
 }
