@@ -1,6 +1,7 @@
 package webscraper
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 
@@ -20,7 +21,7 @@ func NewWebScraper(url string) *WebScraper {
 	return &WebScraper{URL: url}
 }
 
-func (ws *WebScraper) fetchWebsiteHTML() error {
+func (ws *WebScraper) FetchWebsiteHTML() error {
 	resp, err := http.Get(ws.URL)
 	if err != nil {
 		log.Printf("error fetching URL: %v", err)
@@ -40,26 +41,52 @@ func (ws *WebScraper) fetchWebsiteHTML() error {
 	return nil
 } 
 
-func (ws *WebScraper) ExtractHeadline() {
-	var extractHeadline func(*html.Node)
-	extractHeadline = func(n *html.Node) {
+func (ws *WebScraper) ExtractHeadlines() {
+	var extractHeadline func(*html.Node) bool
+	extractHeadline = func(n *html.Node) bool {	
 		if n.Type == html.ElementNode && n.Data == "h1" {
-			for c := n.FirstChild; c != nil; c = n.NextSibling {
+			for c := n.FirstChild; c != nil; c = c.NextSibling {
 				if c.Type == html.TextNode {
-					log.Printf("Headline found.")
-					return
+					fmt.Println("Headline found:", c.Data)
+					return false
 				}
 			}
-			for c := n.FirstChild; c != nil; c = c.NextSibling {
-				extractHeadline(c)
+		}
+
+		for c := n.FirstChild; c != nil; c = c.NextSibling {
+			if extractHeadline(c) {
+				return true
 			}
 		}
+		return false
 	}
 
-	if ws.Doc == nil {
-		log.Printf("Document not found")
-		return
+	if ws.Doc != nil {
+		extractHeadline(ws.Doc)
+	}
+}
+
+func (ws *WebScraper) ExtractSubtitles() {
+	var extractSubtitles func(*html.Node) bool
+	extractSubtitles = func(n *html.Node) bool {	
+		if n.Type == html.ElementNode && n.Data == "h2" {
+			for c := n.FirstChild; c != nil; c = c.NextSibling {
+				if c.Type == html.TextNode {
+					fmt.Println("Subtitles found:", c.Data)
+					return false
+				}
+			}
+		}
+
+		for c := n.FirstChild; c != nil; c = c.NextSibling {
+			if extractSubtitles(c) {
+				return true
+			}
+		}
+		return false
 	}
 
-	extractHeadline(ws.Doc)
+	if ws.Doc != nil {
+		extractSubtitles(ws.Doc)
+	}
 }
