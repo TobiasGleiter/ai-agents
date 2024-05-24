@@ -71,6 +71,82 @@ const (
 	llmChatEndpoint = "http://localhost:11434/api/chat"
 )
 
+type OllamaModel struct {
+	Model    string `json:"model"`
+    Options  ModelOptions
+    Stream bool `json:"stream"`
+	Format   string   `json:"format,omitempty"`
+	KeepAlive int64 `json:"keepalive,omitempty"`
+	Stop   []string `json:"stop"` // Not from Ollama
+}
+
+type OllamaGenerateRequest struct {
+    Model    string `json:"model"`
+    Prompt   string `json:"prompt"`
+    Options  ModelOptions
+    Stream bool `json:"stream"`
+	Format   string   `json:"format,omitempty"`
+	KeepAlive int64 `json:"keepalive,omitempty"`	
+}
+
+type OllamaChatRequest struct {
+    Model    string `json:"model"`
+	Messages []ModelMessage `json:"messages"`
+    Options  ModelOptions
+    Stream bool `json:"stream"`
+	Format   string   `json:"format,omitempty"`
+	KeepAlive int64 `json:"keepalive,omitempty"`	
+}
+
+type OllamaClient struct {
+	Model OllamaModel
+	Messages []ModelMessage
+}
+
+func NewOllamaClient(model OllamaModel) *OllamaClient {
+	return &OllamaClient{Model: model}
+}
+
+func (oc *OllamaClient) Generate(prompt string) (Response, error) {
+	client := &http.Client{
+		Timeout: 240 * time.Second,
+	}
+
+	request := OllamaGenerateRequest{
+		Model: oc.Model.Model,
+		Prompt: prompt,
+		Options: oc.Model.Options,
+		Stream: oc.Model.Stream,
+		Format: oc.Model.Format,
+		KeepAlive: oc.Model.KeepAlive,
+	}
+
+	requestBody, err := json.Marshal(request)
+	if err != nil {
+		return Response{}, errors.Wrap(err, "error marshaling request")
+	}
+
+	req, err := http.NewRequest("POST", llmGenerateEndpoint, bytes.NewReader(requestBody))
+	if err != nil {
+		return Response{}, errors.Wrap(err, "create request failed")
+	}
+	req.Header.Set("Content-Type", "application/json")
+
+	resp, err := client.Do(req)
+	if err != nil {
+		return Response{}, errors.Wrap(err, "HTTP request failed")
+	}
+	defer resp.Body.Close()
+
+	var response Response
+	err = json.NewDecoder(resp.Body).Decode(&response)
+	if err != nil {
+		return Response{}, errors.Wrap(err, "error decoding response")
+	}
+
+	return response, nil
+}
+
 
 func Generate(request Model) (Response, error) {
 	client := &http.Client{
