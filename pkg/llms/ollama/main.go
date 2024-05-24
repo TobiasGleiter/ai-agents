@@ -1,6 +1,7 @@
 package ollama
 
 import (
+	"fmt"
 	"bytes"
 	"encoding/json"
 	"net/http"
@@ -188,6 +189,64 @@ func (oc *OllamaClient) GenerateEmbeddings(prompt string) (EmbeddingResponse, er
 	return embeddingResponse, nil	
 }
 
+func (oc *OllamaClient) Chat(prompt string) (ChatResponse, error) {
+	client := &http.Client{
+        Timeout: timeout * time.Second,
+    }
+
+	messages := append(oc.Messages, ModelMessage{
+		Role: "user",
+		Content: prompt,
+	})
+
+	fmt.Println(messages[0].Content)
+
+	request := OllamaChatRequest{
+		Model: oc.Model.Model,
+		Messages: messages,
+		Options: oc.Model.Options,
+		Stream: oc.Model.Stream,
+	}
+
+	fmt.Println(request.Model)
+
+    requestBody, err := json.Marshal(request)
+    if err != nil {
+        return ChatResponse{}, errors.Wrap(err, "error marshaling request")
+    }
+
+    req, err := http.NewRequest("POST", llmChatEndpoint, bytes.NewReader(requestBody))
+    if err != nil {
+        return ChatResponse{}, errors.Wrap(err, "create request failed")
+    }
+    req.Header.Set("Content-Type", "application/json")
+
+    resp, err := client.Do(req)
+    if err != nil {
+        return ChatResponse{}, errors.Wrap(err, "HTTP request failed")
+    }
+	defer resp.Body.Close()
+
+    
+	decoder := json.NewDecoder(resp.Body)
+	var chatResponse ChatResponse
+	for {
+		if err := decoder.Decode(&chatResponse); err != nil {
+			if errors.Is(err, io.EOF) {
+				break
+			}
+			return ChatResponse{}, errors.Wrap(err, "error decoding response")
+		}
+	}
+
+	if chatResponse.Done {
+		return chatResponse, nil
+	}
+
+	
+
+    return chatResponse, nil	
+}
 
 func Generate(request Model) (Response, error) {
 	client := &http.Client{
@@ -284,6 +343,8 @@ func Chat(request Model) (ChatResponse, error) {
 			return ChatResponse{}, errors.Wrap(err, "error decoding response")
 		}
 	}
+
+	fmt.Println(chatResponse.Message.Content)
 
 	if chatResponse.Done {
 		return chatResponse, nil

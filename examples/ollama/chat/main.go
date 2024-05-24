@@ -7,26 +7,38 @@ import (
 ) 
 
 func main() {
-	var messages []ollama.ModelMessage
-	messages = append(messages, ollama.ModelMessage{
-		Role: "user",
-		Content: "why is the sky blue?",
-	})
+	
 
-	llamaRequest := ollama.Model{
+	// messages = append(messages, ollama.ModelMessage{
+	// 	Role: "user",
+	// 	Content: "why is the sky blue?",
+	// })
+
+	wizardlm2_7b_model := ollama.OllamaModel{
 		Model:  "wizardlm2:7b",
-		Messages: messages,
 		Options: ollama.ModelOptions{
-			Temperature: 0.8,
+			Temperature: 0.7,
 			NumCtx: 4096,
 		},
 		Stream: true,
 	}
 
-	// Returns the final response after the stream is done.
-	_, err := ollama.Chat(llamaRequest)
+	ollamaClient := ollama.NewOllamaClient(wizardlm2_7b_model)
+
+	prompt := "Hello, tell me a good joke!"
+	_, err := ollamaClient.Chat(prompt)
 	if err != nil {
 		fmt.Printf("Error: %v\n", err)
-		return
 	}
+
+	// for _, message := range ollamaClient.Messages {
+	// 	fmt.Println(string(message.Content))
+	// }	
+
+	// // Returns the final response after the stream is done.
+	// _, err := ollama.Chat(llamaRequest)
+	// if err != nil {
+	// 	fmt.Printf("Error: %v\n", err)
+	// 	return
+	// }
 }
