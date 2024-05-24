@@ -79,7 +79,7 @@ type OllamaModel struct {
     Stream bool `json:"stream"`
 	Format   string   `json:"format,omitempty"`
 	KeepAlive int64 `json:"keepalive,omitempty"`
-	Stop   []string `json:"stop"` // Not from Ollama
+	Stop   []string `json:"stop"` // Not from Ollama, stop sequence for streaming (chat)
 }
 
 type OllamaGenerateRequest struct {
@@ -199,16 +199,12 @@ func (oc *OllamaClient) Chat(prompt string) (ChatResponse, error) {
 		Content: prompt,
 	})
 
-	fmt.Println(messages[0].Content)
-
 	request := OllamaChatRequest{
 		Model: oc.Model.Model,
 		Messages: messages,
 		Options: oc.Model.Options,
 		Stream: oc.Model.Stream,
 	}
-
-	fmt.Println(request.Model)
 
     requestBody, err := json.Marshal(request)
     if err != nil {
@@ -230,6 +226,7 @@ func (oc *OllamaClient) Chat(prompt string) (ChatResponse, error) {
     
 	decoder := json.NewDecoder(resp.Body)
 	var chatResponse ChatResponse
+	var finalResponse ChatResponse
 	for {
 		if err := decoder.Decode(&chatResponse); err != nil {
 			if errors.Is(err, io.EOF) {
@@ -237,15 +234,18 @@ func (oc *OllamaClient) Chat(prompt string) (ChatResponse, error) {
 			}
 			return ChatResponse{}, errors.Wrap(err, "error decoding response")
 		}
+
+		finalResponse.Message.Content += chatResponse.Message.Content
+		fmt.Print(chatResponse.Message.Content)
 	}
 
 	if chatResponse.Done {
-		return chatResponse, nil
+		return finalResponse, nil
 	}
 
 	
 
-    return chatResponse, nil	
+    return finalResponse, nil	
 }
 
 func Generate(request Model) (Response, error) {
