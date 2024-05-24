@@ -7,18 +7,21 @@ import (
 ) 
 
 func main() {
-	llamaRequest := ollama.Model{
+	llama3_8b_model := ollama.OllamaModel{
 		Model:  "llama3:8b",
-		Prompt: "Hi, how do you do?",
 		Options: ollama.ModelOptions{NumCtx: 4096},
 		Stream: false,
 	}
 
-	llamaEmbeddingResponse, err := ollama.GenerateEmbeddings(llamaRequest)
+	ollamaClient := ollama.NewOllamaClient(llama3_8b_model)
+
+
+	prompt := "Hi, how do you do?"
+	response, err := ollamaClient.GenerateEmbeddings(prompt)
 	if err != nil {
 		fmt.Printf("Error: %v\n", err)
 		return
 	}
 
-	fmt.Println("Response:", llamaEmbeddingResponse.Embedding)
+	fmt.Println("Response:", response.Embedding)
 }

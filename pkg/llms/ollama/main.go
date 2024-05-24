@@ -66,6 +66,7 @@ type ChatResponse struct {
 }
 
 const (
+	timeout = 240
 	llmGenerateEndpoint = "http://localhost:11434/api/generate"
 	llmGenerateEmbeddingsEndpoint = "http://localhost:11434/api/embeddings"
 	llmChatEndpoint = "http://localhost:11434/api/chat"
@@ -109,7 +110,7 @@ func NewOllamaClient(model OllamaModel) *OllamaClient {
 
 func (oc *OllamaClient) Generate(prompt string) (Response, error) {
 	client := &http.Client{
-		Timeout: 240 * time.Second,
+		Timeout: timeout * time.Second,
 	}
 
 	request := OllamaGenerateRequest{
@@ -145,6 +146,46 @@ func (oc *OllamaClient) Generate(prompt string) (Response, error) {
 	}
 
 	return response, nil
+}
+
+func (oc *OllamaClient) GenerateEmbeddings(prompt string) (EmbeddingResponse, error) {
+	client := &http.Client{
+		Timeout: timeout * time.Second,
+	}
+
+	request := OllamaGenerateRequest{
+		Model: oc.Model.Model,
+		Prompt: prompt,
+		Options: oc.Model.Options,
+		Stream: oc.Model.Stream,
+		Format: oc.Model.Format,
+		KeepAlive: oc.Model.KeepAlive,
+	}
+
+	requestBody, err := json.Marshal(request)
+	if err != nil {
+		return EmbeddingResponse{}, errors.Wrap(err, "error marshaling request")
+	}
+
+	req, err := http.NewRequest("POST", llmGenerateEmbeddingsEndpoint, bytes.NewReader(requestBody))
+	if err != nil {
+		return EmbeddingResponse{}, errors.Wrap(err, "create request failed")
+	}
+	req.Header.Set("Content-Type", "application/json")
+
+	resp, err := client.Do(req)
+	if err != nil {
+		return EmbeddingResponse{}, errors.Wrap(err, "HTTP request failed")
+	}
+	defer resp.Body.Close()
+
+	var embeddingResponse EmbeddingResponse
+	err = json.NewDecoder(resp.Body).Decode(&embeddingResponse)
+	if err != nil {
+		return EmbeddingResponse{}, errors.Wrap(err, "error decoding response")
+	}
+
+	return embeddingResponse, nil	
 }
 
 
