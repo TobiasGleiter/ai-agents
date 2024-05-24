@@ -15,7 +15,6 @@ func main() {
 
 	ollamaClient := ollama.NewOllamaClient(llama3_8b_model)
 
-
 	prompt := "Hi, how do you do?"
 	response, err := ollamaClient.GenerateEmbeddings(prompt)
 	if err != nil {
