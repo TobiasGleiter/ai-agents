@@ -7,19 +7,29 @@ import (
 ) 
 
 func main() {
-	llamaRequest := ollama.Model{
-		Model:  "llama3:8b",
-		Prompt: "What color is the sky at different times of the day? Respond using JSON",
-		Options: ollama.ModelOptions{NumCtx: 4096},
+	wizardlm2_7b := ollama.OllamaModel{
+		Model:  "wizardlm2:7b",
+		Options: ollama.ModelOptions{
+			Temperature: 0.7,
+			NumCtx: 4096,
+		},
+		Stream: false, // If generate then this need to be false!
 		Format: "json",
-		Stream: false,
 	}
+	
+	ollamaClient := ollama.NewOllamaClient(wizardlm2_7b)
 
-	llamaJsonResponse, err := ollama.Generate(llamaRequest)
+	prompt := `
+		You are a helpful AI assistant.
+		The User will ask a question and the assistant will output the response in JSON format like this:
+		{"answer": ""}
+		
+		What color is the sky at different times of the day? Respond using JSON.`
+
+	res, err := ollamaClient.Generate(prompt)
 	if err != nil {
 		fmt.Printf("Error: %v\n", err)
-		return
 	}
 
-	fmt.Println("Response:", llamaJsonResponse.Response)
+	fmt.Println("Response:", res.Response)
 }
