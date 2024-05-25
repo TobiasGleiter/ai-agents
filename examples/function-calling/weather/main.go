@@ -2,12 +2,34 @@ package main
 
 import (
 	"fmt"
-	//"encoding/json"
-	//"log"
+	"encoding/json"
+	"log"
 
 	"github.com/TobiasGleiter/ai-agents/pkg/llms/ollama"
-	ChatColor "github.com/TobiasGleiter/ai-agents/internal/color"
+	
 ) 
+
+type FunctionResponse interface {
+	Process() string
+}
+
+type WeatherResponse struct {
+	Location string
+	Format   string
+	Temperature string
+}
+
+func (wr WeatherResponse) Process() string {
+	return fmt.Sprintf("\nCurrent weather for %s: Temperature is %s in %s format", wr.Location, wr.Temperature, wr.Format)
+}
+
+func getCurrentWeather(params Parameters) FunctionResponse {
+	format, _ := params.Properties["format"].(string)
+	location, _ := params.Properties["location"].(string)
+	temperature := "68"
+
+	return WeatherResponse{Location: location, Format: format, Temperature: temperature}
+}
 
 type Parameters struct {
 	Properties map[string]interface{} `json:"properties"`
@@ -18,15 +40,10 @@ type FunctionCalling struct {
     Parameters  Parameters `json:"parameters"`
 }
 
-var functions = map[string]func(Parameters){
+var functions = map[string]func(Parameters) FunctionResponse{
 	"get_current_weather": getCurrentWeather,
 }
 
-func getCurrentWeather(params Parameters) {
-	format, _ := params.Properties["format"].(string)
-	location, _ := params.Properties["location"].(string)
-	ChatColor.PrintColor(ChatColor.Cyan, "Getting current weather for " + location + " in " +  format)
-}
 
 func main() {
 	prompt := "What's the weather like in Detroit?"
@@ -91,68 +108,19 @@ func main() {
 
 	ollamaClient.SetSystemPrompt(systemPrompt)
 	ollamaClient.SetMessages(fewShotMessages)
-	ollamaClient.Chat(prompt)
 
+	var response FunctionCalling
+	res, _ := ollamaClient.Chat(prompt)
 
+	err := json.Unmarshal([]byte(res.Message.Content), &response)
+	if err != nil {
+		log.Fatalf("Failed to decode JSON: %s", err)
+	}
 
-
-	// fewShot := `
-	// {
-	// 	"name": "get_current_weather",
-	// 	"parameters": {
-	// 		"properties": {
-	// 			"location": "berlin",
-	// 			"format": "celsius"
-	// 		}
-	// 	}
-	// }`
-
-	// var messages []ollama.ModelMessage
-	// messages = append(messages, ollama.ModelMessage{
-    //     Role: "system",
-    //     Content: fmt.Sprintf(`
-	// 		You are a helpful AI assistant.
-	// 		Respond in JSON format like this:
-	// 			%s`, weatherTool),
-    // })
-
-	// messages = append(messages, ollama.ModelMessage{
-	// 	Role: "user",
-	// 	Content: "What's the weather like in Berlin and Stuttgart?",
-	// })
-
-	// messages = append(messages, ollama.ModelMessage{
-	// 	Role: "assistant",
-	// 	Content: fewShot,
-	// })
-
-	// messages = append(messages, ollama.ModelMessage{
-	// 	Role: "user",
-	// 	Content: prompt,
-	// })
-
-	// llamaRequest := ollama.Model{
-	// 	Model:  "llama3:8b",
-	// 	Messages: messages,
-	// 	Options: ollama.ModelOptions{
-	// 		Temperature: 1,
-	// 		NumCtx: 4096,
-	// 	},
-	// 	Stream: false,
-	// 	Format: "json",
-	// }
-
-	// var response FunctionCalling
-	// res, err := ollama.Chat(llamaRequest)
-
-	// err = json.Unmarshal([]byte(res.Message.Content), &response)
-	// if err != nil {
-	// 	log.Fatalf("Failed to decode JSON: %s", err)
-	// }
-
-	// if function, exists := functions[response.Name]; exists {
-	// 	function(response.Parameters)
-	// } else {
-	// 	fmt.Printf("No function found for name %s\n", response.Name)
-	// }
+	if function, exists := functions[response.Name]; exists {
+		result := function(response.Parameters)
+		fmt.Println(result.Process())
+	} else {
+		fmt.Printf("No function found for name %s\n", response.Name)
+	}
 }
