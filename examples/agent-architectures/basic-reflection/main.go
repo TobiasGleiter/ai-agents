@@ -1,7 +1,6 @@
 package main 
 
 import (
-	"fmt"
 
 	"github.com/TobiasGleiter/ai-agents/pkg/llms/ollama"
 	ChatColor "github.com/TobiasGleiter/ai-agents/internal/color"
@@ -23,37 +22,22 @@ func main() {
 	initPrompt := "Hello, how do you do?"
 	prompt = initPrompt
 
-	n := 4
+	llama3_8b_model := ollama.OllamaModel{
+		Model:  "llama3:8b",
+		Options: ollama.ModelOptions{NumCtx: 4096},
+		Stream: false,
+	}
+
+	generatorLlm := ollama.NewOllamaClient(llama3_8b_model)
+	reflectorLlm := ollama.NewOllamaClient(llama3_8b_model)
+
+	n := 2
 	for i := 0; i < n; i++ {
-		userRequest := ollama.Model{
-			Model:  "llama3:8b",
-			Prompt: prompt,
-			Options: ollama.ModelOptions{NumCtx: 4096},
-		}
-
-		// Generator LLM
-		var err error
-		firstResponse, err = ollama.Generate(userRequest)
-		if err != nil {
-			fmt.Printf("Error: %v\n", err)
-			return
-		}
-
+		firstResponse, _ = generatorLlm.Generate(prompt)
 		ChatColor.PrintColor(ChatColor.Yellow, firstResponse.Response)
-		reflectionPrompt := firstResponse.Response + " How to improve the answer to this response: " + initPrompt
 
-		reflectionRequest := ollama.Model{
-			Model:  "llama3:8b",
-			Prompt: reflectionPrompt ,
-			Options: ollama.ModelOptions{NumCtx: 4096},
-		}
-
-		// Reflection LLM
-		basicReflectionResponse, err := ollama.Generate(reflectionRequest)
-		if err != nil {
-			fmt.Printf("Error: %v\n", err)
-			return
-		}
+		reflectionPrompt := firstResponse.Response + " How to improve the answer to this response: " + initPrompt	
+		basicReflectionResponse, _ := reflectorLlm.Generate(reflectionPrompt)
 
 		ChatColor.PrintColor(ChatColor.Blue, basicReflectionResponse.Response)
 		prompt = basicReflectionResponse.Response + " Improve your reponse with these tips. Output only the improved response in a sentence."
