@@ -216,8 +216,6 @@ func (oc *OllamaClient) Chat(prompt string) (ChatResponse, error) {
         Timeout: timeout * time.Second,
     }
 
-	fmt.Println("\nUser:", prompt)
-
 	messages := append(oc.Messages, ModelMessage{
 		Role: "user",
 		Content: prompt,
@@ -249,8 +247,6 @@ func (oc *OllamaClient) Chat(prompt string) (ChatResponse, error) {
     }
 	defer resp.Body.Close()
 
-	fmt.Println("\nAssistant:")
-
 	decoder := json.NewDecoder(resp.Body)
 	var chatResponse ChatResponse
 	var finalResponse ChatResponse
@@ -263,7 +259,6 @@ func (oc *OllamaClient) Chat(prompt string) (ChatResponse, error) {
 		}
 
 		finalResponse.Message.Content += chatResponse.Message.Content
-		fmt.Print(chatResponse.Message.Content)
 	}
 
 	if chatResponse.Done {
