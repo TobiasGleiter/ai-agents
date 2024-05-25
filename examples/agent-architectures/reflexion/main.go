@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"encoding/json"
 	"log"
-	"os"
 
 	"github.com/TobiasGleiter/ai-agents/pkg/llms/ollama"
 	ChatColor "github.com/TobiasGleiter/ai-agents/internal/color"
@@ -51,7 +50,7 @@ func main() {
 
 	llama3_8b_model := ollama.OllamaModel{
 		Model:  "llama3:8b",
-		Options: ollama.ModelOptions{NumCtx: 4096},
+		Options: ollama.ModelOptions{Temperature: 0.7, NumCtx: 4096},
 		Stream: false,
 		Format: "json",
 	}
@@ -69,20 +68,20 @@ func main() {
 	systemPrompt := fmt.Sprintf(`
 		You are a helpful AI assistant.
 		Generate an inital response along with self critque (how to improve the response) and select the right tools that helps solve the problem.
-		Tools available: %s
+		Tools available: %s; Only use this tools.
 		Respond in JSON format like this: %s
 		`, responseJsonFormat, tools)
 
 	var fewShotMessages []ollama.ModelMessage
 	fewShotMessages = append(fewShotMessages, ollama.ModelMessage{
 		Role: "user",
-		Content: "When is the next US election?", // Necessary to add "Respond in JSON" or there will be many whitespaces
+		Content: "Question provided by the user.", // Necessary to add "Respond in JSON" or there will be many whitespaces
 	})
 	fewShotMessages = append(fewShotMessages, ollama.ModelMessage{
 		Role: "assistant",
 		Content: `
-			"response": "",
-			"critque": "",
+			"response": "Response provided by the assistant",
+			"critque": "Critque provided by the assistant",
 			"tools": [{"name": "search_internet"}]
 		}`,
 	})
@@ -99,7 +98,7 @@ func main() {
 
 	ChatColor.PrintColor(ChatColor.Yellow, "Initial Response: " + string(response.Response))
 	ChatColor.PrintColor(ChatColor.Cyan, "Initial Critque: " + string(response.Critque))
-	ChatColor.PrintColor(ChatColor.Green, "Tools: " + fmt.Sprintf("%s", response.Tools))
+	ChatColor.PrintColor(ChatColor.Gray, "Tools: " + fmt.Sprintf("%s", response.Tools))
 
 	// 3. Use the tool(s)
 	for i := 0; i < len(response.Tools); i++ {
@@ -112,11 +111,13 @@ func main() {
 
 	revisorSystemPrompt := fmt.Sprintf(`
 	You are a revisor AI assistant.
-	Generate a new better response along as a new critque to improve the response. 
+	Generate a new better response along as a new critque to improve the response.
+	Tools available: %s 
 	Respond in JSON format like this: %s
-	`, responseJsonFormat)
+	`, tools, responseJsonFormat)
 
 	revisorLlm.SetSystemPrompt(revisorSystemPrompt)
+	revisorLlm.SetMessages(fewShotMessages)
 
 	var finalResponse ollama.ChatResponse
 	var revisorResponse InitialResponse
@@ -129,48 +130,15 @@ func main() {
 
 		err = json.Unmarshal([]byte(finalResponse.Message.Content), &revisorResponse)
 		if err != nil {
-			prompt = "Try again please."
+			prompt = "Try again please. Respond in JSON."
 			return
 		}
 
+		ChatColor.PrintColor(ChatColor.Yellow, "Initial Response: " + string(response.Response))
 		ChatColor.PrintColor(ChatColor.Cyan, revisorResponse.Critque)
-
 		prompt = fmt.Sprintf("Response: %s; Critque: %s;", string(response.Response), string(response.Critque))
 	}
 
-	err = json.Unmarshal([]byte(finalResponse.Message.Content), &revisorResponse)
-	if err != nil {
-		log.Fatalf("Failed to decode JSON: %s", err)
-	}
-
+	json.Unmarshal([]byte(finalResponse.Message.Content), &revisorResponse)
 	ChatColor.PrintColor(ChatColor.Green, "Final Response: " + revisorResponse.Response)
-}
-
-
-func writeMessagesToMarkdown(messages []ollama.ModelMessage, filename string) error {
-    // Create or open the markdown file
-    file, err := os.Create(filename)
-    if err != nil {
-        return fmt.Errorf("failed to create file: %w", err)
-    }
-    defer file.Close()
-
-    // Write the messages to the markdown file
-    for _, message := range messages {
-        var header string
-        if message.Role == "user" {
-            header = "### User\n"
-        } else if message.Role == "assistant" {
-            header = "### Assistant\n"
-        } else {
-            header = "### " + message.Role + "\n"
-        }
-
-        _, err := file.WriteString(header + "\n" + message.Content + "\n\n")
-        if err != nil {
-            return fmt.Errorf("failed to write to file: %w", err)
-        }
-    }
-
-    return nil
 }
