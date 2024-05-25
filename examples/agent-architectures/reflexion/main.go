@@ -134,6 +134,8 @@ func main() {
 			return
 		}
 
+		// Call tools
+
 		ChatColor.PrintColor(ChatColor.Yellow, "Initial Response: " + string(response.Response))
 		ChatColor.PrintColor(ChatColor.Cyan, revisorResponse.Critque)
 		prompt = fmt.Sprintf("Response: %s; Critque: %s;", string(response.Response), string(response.Critque))
