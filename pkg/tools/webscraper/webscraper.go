@@ -7,10 +7,6 @@ import (
 	"golang.org/x/net/html"
 )
 
-func main() {
-
-}
-
 type WebScraper struct {
 	URL string
 	Doc *html.Node
@@ -69,7 +65,6 @@ func (ws *WebScraper) ExtractHeadlines() []string {
 
 	return headlines
 }
-
 
 func (ws *WebScraper) ExtractSubtitles() []string {
 	var subtitles []string
