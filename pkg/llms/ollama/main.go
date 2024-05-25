@@ -109,6 +109,28 @@ func NewOllamaClient(model OllamaModel) *OllamaClient {
 	return &OllamaClient{Model: model}
 }
 
+func (oc *OllamaClient) SetSystemPrompt(prompt string) error {
+	if len(oc.Messages) > 0 {
+		return errors.New("System prompt could only be set at the beginning.")
+	}
+
+	systemPrompt := ModelMessage{
+		Role: "system",
+		Content: prompt,
+	}
+
+	oc.Messages = append(oc.Messages, systemPrompt)
+	return nil
+}
+
+func (oc *OllamaClient) SetMessages(messages []ModelMessage) error {
+	if len(messages) > 0 {
+		oc.Messages = append(oc.Messages, messages...)	
+		return nil
+	}
+	return errors.New("Messages should not be empty.")
+}
+
 func (oc *OllamaClient) Generate(prompt string) (Response, error) {
 	client := &http.Client{
 		Timeout: timeout * time.Second,
@@ -206,6 +228,8 @@ func (oc *OllamaClient) Chat(prompt string) (ChatResponse, error) {
 		Messages: messages,
 		Options: oc.Model.Options,
 		Stream: oc.Model.Stream,
+		Format: oc.Model.Format,
+		KeepAlive: oc.Model.KeepAlive,
 	}
 
     requestBody, err := json.Marshal(request)

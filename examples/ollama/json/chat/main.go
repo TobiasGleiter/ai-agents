@@ -2,8 +2,8 @@ package main
 
 import (
 	"fmt"
-	"encoding/json"
 	"log"
+	"encoding/json"
 
 	"github.com/TobiasGleiter/ai-agents/pkg/llms/ollama"
 ) 
@@ -14,76 +14,47 @@ type CompanyAndTicker struct {
 }
 
 func main() {
-	stockTickerNameOfCompany := "Google"
-
-	companyAndTickerSchema := map[string]map[string]string{
-        "company": {
-            "type":        "string",
-            "description": "Name of the company",
-        },
-        "ticker": {
-            "type":        "string",
-            "description": "Ticker symbol of the company",
-        },
-    }
-
-	companyAndTickerSchemaJSON, err := json.Marshal(companyAndTickerSchema)
-    if err != nil {
-        log.Fatalf("Error marshalling schema: %v", err)
-    }
-
-
-	var messages []ollama.ModelMessage
-	messages = append(messages, ollama.ModelMessage{
-        Role: "system",
-        Content: fmt.Sprintf(`You are a helpful AI assistant.
-				The user will enter a company name and the assistant will output the response in JSON format like this:
-				%s`, string(companyAndTickerSchemaJSON)),
-    })
-
-	messages = append(messages, ollama.ModelMessage{
-		Role: "user",
-		Content: "Apple",
-	})
-
-	messages = append(messages, ollama.ModelMessage{
-		Role: "assistant",
-		Content: `{"company": "Apple", "ticker": "AAPL"}`,
-	})
-
-	messages = append(messages, ollama.ModelMessage{
-		Role: "user",
-		Content: stockTickerNameOfCompany,
-	})
-
-	llamaRequest := ollama.Model{
+	
+	
+	wizardlm2_7b := ollama.OllamaModel{
 		Model:  "wizardlm2:7b",
-		Messages: messages,
 		Options: ollama.ModelOptions{
-			Temperature: 0.8,
+			Temperature: 0.7,
 			NumCtx: 4096,
 		},
 		Stream: false,
 		Format: "json",
+		KeepAlive: -1,
 	}
+	
+	ollamaClient := ollama.NewOllamaClient(wizardlm2_7b)
+
+	systemPrompt := fmt.Sprintf(`
+		You are a helpful AI assistant.
+		The user will enter a company name and the assistant will output the response in JSON format like this:
+		{"company": "Apple", "ticker": "AAPL"}`)
+
+	
+	var fewShotMessages []ollama.ModelMessage
+	fewShotMessages = append(fewShotMessages, ollama.ModelMessage{
+		Role: "user",
+		Content: "Apple. Respond in JSON.", // Necessary to add "Respond in JSON" or there will be many whitespaces
+	})
+	fewShotMessages = append(fewShotMessages, ollama.ModelMessage{
+		Role: "assistant",
+		Content: `{"company": "Apple", "ticker": "AAPL"}`,
+	})
+	
+	ollamaClient.SetSystemPrompt(systemPrompt)
+	ollamaClient.SetMessages(fewShotMessages) // Optionally, depending on the accuracy of the generated output
 
 	var response CompanyAndTicker
+	res, err := ollamaClient.Chat("Google")
 	
-	limit := 4
-	for i := 0; i < limit; i++ {
-		res, _ := ollama.Chat(llamaRequest)
-
-		err = json.Unmarshal([]byte(res.Message.Content), &response)
-		if err == nil {
-			break
-		}
-		fmt.Println("Retrying", i)
-
-	}
-
+	err = json.Unmarshal([]byte(res.Message.Content), &response)
 	if err != nil {
-		log.Fatalf("Failed to decode JSON response after %d attempts: %v", limit, err)
+		log.Fatalf("Failed to decode JSON: %v", err)
 	}
 
-    fmt.Printf("Company: %s, Ticker: %s\n", response.Company, response.Ticker)
+	fmt.Printf("\nDecoded JSON: Company: %s, Ticker: %s\n", response.Company, response.Ticker)
 }
