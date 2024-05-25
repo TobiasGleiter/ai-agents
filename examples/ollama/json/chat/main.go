@@ -13,9 +13,7 @@ type CompanyAndTicker struct {
     Ticker  string `json:"ticker"`
 }
 
-func main() {
-	
-	
+func main() {	
 	wizardlm2_7b := ollama.OllamaModel{
 		Model:  "wizardlm2:7b",
 		Options: ollama.ModelOptions{
