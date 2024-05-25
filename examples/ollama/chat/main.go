@@ -16,6 +16,7 @@ func main() {
 
 	ollamaClient := ollama.NewOllamaClient(wizardlm2_7b_model)
 
+	// The chat (messages) are saved as long as the programm is loaded.
 	ollamaClient.Chat("Hello, tell me a good joke!")
 	ollamaClient.Chat("Explain this joke!")
 	ollamaClient.Chat("Summarize the joke in a bullet list!")
