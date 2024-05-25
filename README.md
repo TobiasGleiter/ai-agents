@@ -14,7 +14,7 @@ Experiments with Go for AI-Agents
 
 - [x] Basic Reflection
 - [x] Reflexion Actor
-- [ ] ReAct (Yao, Shunyi et al. 2023)
+- [x] ReAct (Yao, Shunyi et al. 2023) (without external observation)
 - [ ] Language Agents Tree Search (LATs)
 - [ ] Plan and Execute
 - [ ] Reasoning without Oberservation (ReWOO)
