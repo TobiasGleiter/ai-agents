@@ -6,10 +6,19 @@ import (
 	"log"
 
 	"github.com/TobiasGleiter/ai-agents/pkg/llms/ollama"
-	
 ) 
 
-type FunctionResponse interface {
+
+type Parameters struct {
+	Properties map[string]interface{} `json:"properties"`
+}
+
+type FunctionCalling struct {
+    Name       string     `json:"name"`
+    Parameters Parameters `json:"parameters"`
+}
+
+type FunctionCallResponse interface {
 	Process() string
 }
 
@@ -23,32 +32,22 @@ func (wr WeatherResponse) Process() string {
 	return fmt.Sprintf("\nCurrent weather for %s: Temperature is %s in %s format", wr.Location, wr.Temperature, wr.Format)
 }
 
-func getCurrentWeather(params Parameters) FunctionResponse {
+func getCurrentWeather(params Parameters) FunctionCallResponse {
 	format, _ := params.Properties["format"].(string)
 	location, _ := params.Properties["location"].(string)
-	temperature := "68"
+	temperature := "68" // Fetch the weather temperature
 
 	return WeatherResponse{Location: location, Format: format, Temperature: temperature}
 }
 
-type Parameters struct {
-	Properties map[string]interface{} `json:"properties"`
-}
-
-type FunctionCalling struct {
-    Name string `json:"name"`
-    Parameters  Parameters `json:"parameters"`
-}
-
-var functions = map[string]func(Parameters) FunctionResponse{
+var functions = map[string]func(Parameters) FunctionCallResponse{
 	"get_current_weather": getCurrentWeather,
 }
-
 
 func main() {
 	prompt := "What's the weather like in Detroit?"
 
-	// Similar to the OpenAI format
+	// Similar to the OpenAI format: https://platform.openai.com/docs/guides/function-calling
 	weatherTool := `
 	{
         "name": "get_current_weather",
@@ -92,7 +91,7 @@ func main() {
 	var fewShotMessages []ollama.ModelMessage
 	fewShotMessages = append(fewShotMessages, ollama.ModelMessage{
 		Role: "user",
-		Content: "What's the weather like in Berlin?", // Necessary to add "Respond in JSON" or there will be many whitespaces
+		Content: "What's the weather like in Berlin?",
 	})
 	fewShotMessages = append(fewShotMessages, ollama.ModelMessage{
 		Role: "assistant",
