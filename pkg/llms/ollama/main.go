@@ -255,6 +255,72 @@ func (oc *OllamaClient) Chat(prompt string) (ChatResponse, error) {
     return finalResponse, nil	
 }
 
+func (oc *OllamaClient) MultimodalChat(prompt string, images []string) (ChatResponse, error) {
+	client := &http.Client{
+        Timeout: timeout * time.Second,
+    }
+
+	fmt.Println("\nUser:", prompt)
+
+	messages := append(oc.Messages, ModelMessage{
+		Role: "user",
+		Content: prompt,
+		Images: images,
+	})
+
+	request := OllamaChatRequest{
+		Model: oc.Model.Model,
+		Messages: messages,
+		Options: oc.Model.Options,
+		Stream: oc.Model.Stream,
+	}
+
+    requestBody, err := json.Marshal(request)
+    if err != nil {
+        return ChatResponse{}, errors.Wrap(err, "error marshaling request")
+    }
+
+    req, err := http.NewRequest("POST", llmChatEndpoint, bytes.NewReader(requestBody))
+    if err != nil {
+        return ChatResponse{}, errors.Wrap(err, "create request failed")
+    }
+    req.Header.Set("Content-Type", "application/json")
+
+    resp, err := client.Do(req)
+    if err != nil {
+        return ChatResponse{}, errors.Wrap(err, "HTTP request failed")
+    }
+	defer resp.Body.Close()
+
+	fmt.Println("\nAssistant:")
+
+	decoder := json.NewDecoder(resp.Body)
+	var chatResponse ChatResponse
+	var finalResponse ChatResponse
+	for {
+		if err := decoder.Decode(&chatResponse); err != nil {
+			if errors.Is(err, io.EOF) {
+				break
+			}
+			return ChatResponse{}, errors.Wrap(err, "error decoding response")
+		}
+
+		finalResponse.Message.Content += chatResponse.Message.Content
+		fmt.Print(chatResponse.Message.Content)
+	}
+
+	if chatResponse.Done {
+		oc.Messages = append(messages, ModelMessage{
+			Role: "assistant",
+			Content: finalResponse.Message.Content,
+			Images: finalResponse.Message.Images,
+		})
+		return finalResponse, nil
+	}
+
+    return finalResponse, nil	
+}
+
 func Generate(request Model) (Response, error) {
 	client := &http.Client{
 		Timeout: 240 * time.Second,
