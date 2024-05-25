@@ -83,5 +83,4 @@ func main() {
 		})
 		ChatColor.PrintColor(ChatColor.Yellow, thoughtAction.Message.Content)
 	}
-
 }
