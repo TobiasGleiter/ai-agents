@@ -108,6 +108,5 @@ func main() {
 			res, _ := replanner.Chat(prompt) // 6. Replanner decides if the user input is good enough.	
 			fmt.Println(res.Message.Content)
 		}
-		
 	}
 }
