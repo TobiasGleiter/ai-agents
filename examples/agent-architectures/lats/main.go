@@ -3,7 +3,7 @@ package main
 import ()
 
 func main() {
-	// LATs
+	// LATs (https://arxiv.org/abs/2310.04406)
 
 	// 1. Starting at root node either an answer or a tool execution
 	// 2. Reflection LLM generates a reflection on the output from 1. and creates a score (to determine if a solution is found)

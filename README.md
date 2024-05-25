@@ -14,8 +14,8 @@ Experiments with Go for AI-Agents
 
 - [x] Basic Reflection
 - [x] Reflexion Actor
-- [x] ReAct (Yao, Shunyi et al. 2023) (without external observation)
-- [ ] Language Agents Tree Search (LATs)
+- [x] ReAct [Yao, Shunyi et al. 2023](https://arxiv.org/abs/2210.03629) (without external observation)
+- [ ] Language Agents Tree Search [LATs](https://arxiv.org/abs/2310.04406)
 - [ ] Plan and Execute
 - [ ] Reasoning without Oberservation (ReWOO)
 - [ ] LLM Compiler
