@@ -107,10 +107,10 @@ func main() {
 
 	ollamaClient.SetSystemPrompt(systemPrompt)
 	ollamaClient.SetMessages(fewShotMessages)
-
-	var response FunctionCalling
+	
 	res, _ := ollamaClient.Chat(prompt)
-
+	
+	var response FunctionCalling
 	err := json.Unmarshal([]byte(res.Message.Content), &response)
 	if err != nil {
 		log.Fatalf("Failed to decode JSON: %s", err)
