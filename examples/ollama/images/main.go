@@ -11,8 +11,10 @@ func main() {
 	var messages []ollama.ModelMessage
 	var images []string
 
-	ImageTool.LoadImageFromPath("./objectdetection.jpg")
-	base64image := ImageTool.EncodeImageToBase64()
+	imageTool := ImageTool.NewImageTool()
+
+	imageTool.LoadImageFromPath("./objectdetection.jpg")
+	base64image := imageTool.EncodeImageToBase64()
 	images = append(images, base64image)
 
 	messages = append(messages, ollama.ModelMessage{
