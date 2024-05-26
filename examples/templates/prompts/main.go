@@ -3,7 +3,7 @@ package main
 import (
     "fmt"
 
-	pt "github.com/TobiasGleiter/ai-agents/pkg/templates/prompts"
+	pt "github.com/TobiasGleiter/ai-agents/pkg/templates/prompt"
 )
 
 type Product struct {

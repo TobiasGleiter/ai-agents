@@ -5,23 +5,23 @@ import (
 	"text/template"
 )
 
-type ChatMessageTemplate struct {
+type ChatMessage struct {
     Role    string
     Content string
 }
 
 type ChatPromptTemplate struct {
-    MessageTemplates []ChatMessageTemplate
+    Messages []ChatMessage
 }
 
-func NewChatPromptTemplate(templates []ChatMessageTemplate) (*ChatPromptTemplate, error) {
-    return &ChatPromptTemplate{MessageTemplates: templates,}, nil
+func NewChatPromptTemplate(messages []ChatMessage) (*ChatPromptTemplate, error) {
+    return &ChatPromptTemplate{Messages: messages,}, nil
 }
 
-func (cpt *ChatPromptTemplate) FormatMessages(data map[string]interface{}) ([]ChatMessageTemplate, error) {
-    var formattedMessages []ChatMessageTemplate
+func (cpt *ChatPromptTemplate) FormatMessages(data map[string]interface{}) ([]ChatMessage, error) {
+    var formattedMessages []ChatMessage
 
-    for _, templat := range cpt.MessageTemplates {
+    for _, templat := range cpt.Messages {
         tmpl, err := template.New("prompt").Parse(templat.Content)
         if err != nil {
             return nil, err
@@ -33,7 +33,7 @@ func (cpt *ChatPromptTemplate) FormatMessages(data map[string]interface{}) ([]Ch
             return nil, err
         }
 
-        formattedMessages = append(formattedMessages, ChatMessageTemplate{
+        formattedMessages = append(formattedMessages, ChatMessage{
             Role:    templat.Role,
             Content: buffer.String(),
         })

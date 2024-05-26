@@ -3,12 +3,11 @@ package main
 import (
     "fmt"
 
-	pt "github.com/TobiasGleiter/ai-agents/pkg/templates/messages"
+	pt "github.com/TobiasGleiter/ai-agents/pkg/templates/chat"
 )
 
-
 func main() {
-	chatPrompt, _ := pt.NewChatPromptTemplate([]pt.ChatMessageTemplate{
+	chatPrompt, _ := pt.NewChatPromptTemplate([]pt.ChatMessage{
         {Role: "system", Content: "You are a helpful assistant that translates {{.InputLanguage}} to {{.OutputLanguage}}."},
         {Role: "user", Content: "{{.Text}}"},
     })
