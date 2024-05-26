@@ -4,12 +4,9 @@ import (
 	"encoding/json"
 )
 
-type OutputParser interface {
-	Parse(output string, target interface{}) error
-}
-
 type JsonOutputParser struct {}
 
-func (p *JsonOutputParser) Parse(output string, target interface{}) error {
-	return json.Unmarshal([]byte(output), target)
+func (p *JsonOutputParser) Parse(output string) interface{} {
+	var result interface{}
+	return json.Unmarshal([]byte(output), &result)
 }
