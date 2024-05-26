@@ -1,28 +1,21 @@
 package main
 
 import (
-
+	"fmt"
 
 	"github.com/TobiasGleiter/ai-agents/pkg/pipe"
 	pt "github.com/TobiasGleiter/ai-agents/pkg/model_io/output/string"
+	"github.com/TobiasGleiter/ai-agents/pkg/core/model"
 )
 
 
-// SimpleModel is a simple implementation of the Model interface.
-type SimpleModel struct{}
-
-func (m *SimpleModel) Process(input string) string {
-	return "Model processed: " + input
-}
 
 func main() {
-	// Define input
 	input := "hi, bye"
-
-	model := &SimpleModel{}
+	model := &model.SimpleModel{}
 	outputParser := &pt.CommaSeparatedListOutputParser{}
 
-	// Create a new pipe
-	p := pipe.NewPipe(input, model, outputParser)
-	p.Invoke()
+	inputModelOutputPipe := pipe.NewPipe(input, model, outputParser)
+	generatedOutput := inputModelOutputPipe.Invoke()
+	fmt.Println(generatedOutput)
 }

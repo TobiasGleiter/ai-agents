@@ -1,7 +1,5 @@
 package pipe
 
-import "fmt"
-
 // OutputParser is the interface that different parsers should implement.
 type OutputParser interface {
 	Parse(output string) interface{}
@@ -27,16 +25,10 @@ func NewPipe(input string, model Model, outputParser OutputParser) *Pipe {
 	}
 }
 
-func (p *Pipe) Invoke() {
+func (p *Pipe) Invoke() interface{} {
 	output := p.Model.Process(p.Input)
 	parsedOutput := p.OutputParser.Parse(output)
-	
-	switch po := parsedOutput.(type) {
-	case []string:
-		fmt.Println("Parsed output as slice of strings:", po)
-	case string:
-		fmt.Println("Parsed output as string:", po)
-	default:
-		fmt.Println("Unknown output type")
-	}
+	return parsedOutput
 }
+
+
