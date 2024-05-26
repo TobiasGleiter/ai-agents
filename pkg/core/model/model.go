@@ -1,8 +1,22 @@
 package model
 
-type SimpleModel struct{}
+import (
+	"github.com/TobiasGleiter/ai-agents/pkg/llms/ollama"
+)
 
-func (m *SimpleModel) Process(input string) string {
-	generated := input
-	return generated
+type OllamaModelWrapper struct {
+	client *ollama.OllamaClient
+}
+
+func NewOllamaModelWrapper(model ollama.OllamaModel) *OllamaModelWrapper {
+	client := ollama.NewOllamaClient(model)
+	return &OllamaModelWrapper{client: client}
+}
+
+func (o *OllamaModelWrapper) Process(input string) string {
+	response, err := o.client.Generate(input)
+	if err != nil {
+		return ""
+	}
+	return response.Response
 }
