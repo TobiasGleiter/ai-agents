@@ -12,18 +12,18 @@ type Product struct {
 
 type BuildProduct struct {
 	Name string
-	Product string
+	Company string
 }
 
 func main() {
 	companyNamePrompt, _ := pt.NewPromptTemplate("What is a good name for a company that makes {{.Product}}?", "company_name")
-	twoVariablesPrompt, _ := pt.NewPromptTemplate("{{.Name}} want's to build {{.Product}}.", "two_variables")
+	twoVariablesPrompt, _ := pt.NewPromptTemplate("{{.Name}} want's to build {{.Company}}.", "two_variables")
 
 	data := Product{ Product: "coloful socks" }
 	companyNameFormattedPrompt, _ := companyNamePrompt.Format(data)
 	fmt.Println(companyNameFormattedPrompt)
 
-	twoVariablesData := BuildProduct{ Name: "Tobi", Product: "coloful socks"}
-	twoVariablesFormattedPrompt, _ := twoVariablesPrompt.Format(twoVariablesData)
+	buildProduct := BuildProduct{ Name: "Tobi", Company: "coloful socks"}
+	twoVariablesFormattedPrompt, _ := twoVariablesPrompt.Format(buildProduct)
 	fmt.Println(twoVariablesFormattedPrompt)
 }
