@@ -24,5 +24,4 @@ func main() {
 	for j := 0; j < len(subtitles); j++ {
 		fmt.Println("Subtitle:", subtitles[j])
 	}
-
 }
