@@ -3,7 +3,7 @@ package main
 import (
     "fmt"
 
-	pt "github.com/TobiasGleiter/ai-agents/pkg/templates/chat"
+	pt "github.com/TobiasGleiter/ai-agents/pkg/model_io/templates/chat"
 )
 
 func main() {
